@@ -8,7 +8,7 @@ import numpy as np
 
 class Minesweeper:
 
-    def __init__(self, row_count=13, column_count=17, mine_count=36):
+    def __init__(self, row_count=13, column_count=17, mine_count=36, first_step=True):
         self.row_count = row_count
         self.column_count = column_count
         self.mine_count = mine_count
@@ -19,6 +19,8 @@ class Minesweeper:
         self._field = None
         self.score = None
         self._field_mask = np.zeros((self.row_count, self.column_count))
+        if first_step:
+            self.step(np.random.randint(0, self.row_count), np.random.randint(0, self.column_count))
 
     def create_field(self, empty_cell_x, empty_cell_y):
         field = np.zeros(self.row_count * self.column_count)
@@ -79,6 +81,7 @@ class Minesweeper:
 
 def main():
     m = Minesweeper()
+    print(m.get_field())
     while True:
         a = input('Point: ')
         x, y = map(int, a.split())
