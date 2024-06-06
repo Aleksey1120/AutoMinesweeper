@@ -18,6 +18,12 @@ class BaseOptions:
         parser.add_argument('--checkpoint_path', default=None, type=str,
                             help='Checkpoint path')
         parser.add_argument('--batch_size', default=None, type=int, required=True, help='Batch size')
+
+        parser.add_argument('--block_count', default=None, type=int, required=True,
+                            help=' Number of residual blocks in the model.')
+        parser.add_argument('--hidden_channels', default=None, type=int, required=True,
+                            help='Number of channels in the hidden convolutional layers.')
+
         parser.add_argument('--seed', type=int, default=None,
                             help='Enables repeatable experiments by setting the seed for the random')
         parser.add_argument('--cuda', action='store_true', help='Use cuda if available')
@@ -36,4 +42,4 @@ class BaseOptions:
     def print_options(self):
         print('       Option               Value        ')
         for k, v in self.options.__dict__.items():
-            print(f'{k:<20}{str(v):<21}')
+            print(f'{k:<26}{str(v):<21}')

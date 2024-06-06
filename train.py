@@ -7,7 +7,7 @@ from early_stopping import EarlyStopping
 import numpy as np
 import torch
 from data import GamesManager
-from model import Model
+from model import MinesweeperModel
 from torch import nn
 from options.train_options import TrainOptions
 
@@ -29,18 +29,17 @@ def position_to_idx(i, j, k, row_count, column_count):
     return i * row_count * column_count + j * column_count + k
 
 
-def print_epoch_metrics(iter_number, elapsed_time, winrate, average_step_count, loss):
-    print(f'|{iter_number:^10}|{elapsed_time:^10.2f}|{winrate:^9.2%}|{average_step_count:^20.1f}|{loss:^8.3f}|')
+def print_epoch_metrics(iter_number, elapsed_time, winrate, average_step_count):
+    print(f'|{iter_number:^10}|{elapsed_time:^10.2f}|{winrate:^9.2%}|{average_step_count:^20.1f}|')
 
 
 def print_result_table_headers():
-    print('|   Iter   |   Time   | Winrate | Average step count |  Loss  |')
+    print('|   Iter   |   Time   | Winrate | Average step count |')
 
 
-def log_metrics(iter_number, writer, winrate, average_step_count, loss):
+def log_metrics(iter_number, writer, winrate, average_step_count):
     writer.add_scalar('Winrate', winrate, iter_number)
     writer.add_scalar('Average step count', average_step_count, iter_number)
-    writer.add_scalar('Loss', loss, iter_number)
 
 
 def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
@@ -52,7 +51,6 @@ def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
     early_stopping = EarlyStopping(model, opt)
 
     t = time.time()
-    total_loss = 0
 
     for it in range(opt.niter):
         optimizer.zero_grad()
@@ -83,7 +81,6 @@ def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
         loss.backward()
         optimizer.step()
 
-        total_loss += loss.item()
         optimizer.step()
 
         if opt.checkpoint_frequency and (it + 1) % opt.checkpoint_frequency == 0:
@@ -93,16 +90,13 @@ def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
             print_epoch_metrics(it + 1,
                                 time.time() - t,
                                 games_manager.get_winrate(),
-                                games_manager.get_average_step_count(),
-                                total_loss / opt.log_frequency)
+                                games_manager.get_average_step_count())
             if opt.tb_dir is not None:
                 log_metrics(it + 1,
                             writer,
                             games_manager.get_winrate(),
-                            games_manager.get_average_step_count(),
-                            total_loss / opt.log_frequency)
+                            games_manager.get_average_step_count())
             t = time.time()
-            total_loss = 0
             if early_stopping(games_manager.get_winrate()):
                 break
 
@@ -122,7 +116,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() and opt.cuda else 'cpu')
 
     games_manager = GamesManager(opt.batch_size, opt.row_count, opt.column_count, opt.mine_count, opt.games_for_metrics)
-    model = Model(IN_CHANNELS, 64 * 4).to(device)
+    model = MinesweeperModel(IN_CHANNELS, opt.hidden_channels, opt.block_count).to(device)
     if opt.checkpoint_path:
         model.load_state_dict(torch.load(opt.checkpoint_path))
     model.train()
