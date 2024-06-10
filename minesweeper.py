@@ -27,7 +27,7 @@ class Minesweeper:
             self.step(np.random.randint(0, self.row_count), np.random.randint(0, self.column_count))
 
     def create_field(self, empty_cell_x, empty_cell_y):
-        field = np.zeros(self.row_count * self.column_count)
+        field = np.zeros(self.row_count * self.column_count, dtype=np.int32)
 
         empty_idx = empty_cell_x * self.column_count + empty_cell_y
 
@@ -58,7 +58,7 @@ class Minesweeper:
         if self._field[x, y] == 9:
             return 'lose', self._get_hidden_field()
 
-        open_cells(self._field, self._field_mask, x, y)
+        self.score += open_cells(self._field, self._field_mask, x, y)
         if self.score == self.row_count * self.column_count - self.mine_count:
             return 'win', self._get_hidden_field()
         return 'continue', self.get_field()
