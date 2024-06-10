@@ -26,11 +26,6 @@ def log_metrics(iter_number, writer, winrate, average_step_count):
     writer.add_scalar('Average step count', average_step_count, iter_number)
 
 
-def qwe(fields):
-    fields_arr = np.stack(fields)
-    return (fields_arr >= 0) & (fields_arr <= 8)
-
-
 def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
     if opt.verbose >= 2:
         print_result_table_headers()

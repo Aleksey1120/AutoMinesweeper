@@ -9,13 +9,7 @@ from torch import nn
 
 from options.test_options import TestOptions
 from constants import IN_CHANNELS
-from utils import preprocess
-
-
-def set_seed(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
+from utils import preprocess, set_seed
 
 
 def test(opt, model, games_manager: GamesManager, device):
