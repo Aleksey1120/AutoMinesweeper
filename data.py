@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 from collections import deque
 
 from minesweeper import Minesweeper
@@ -31,7 +30,7 @@ class GamesManager:
         return 0.0
 
     def get_fields(self):
-        return [torch.from_numpy(game.get_field()).to(torch.float32) for game in self.games]
+        return [game.get_field() for game in self.games]
 
     def step(self, positions: list[tuple[int, int]]):
         str_to_int_result = {

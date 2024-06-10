@@ -1,5 +1,4 @@
 import os.path
-import random
 import time
 from torch.utils.tensorboard import SummaryWriter
 from early_stopping import EarlyStopping
@@ -10,23 +9,8 @@ from data import GamesManager
 from model import MinesweeperModel
 from torch import nn
 from options.train_options import TrainOptions
-
-IN_CHANNELS = 11
-
-
-def set_seed(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-
-
-def preprocess(field: torch.tensor):
-    one_hot_field = torch.zeros(IN_CHANNELS, field.size(0), field.size(1))
-    return one_hot_field.scatter_(0, field.unsqueeze(0).to(torch.int64), 1.0)
-
-
-def position_to_idx(i, j, k, row_count, column_count):
-    return i * row_count * column_count + j * column_count + k
+from constants import IN_CHANNELS
+from utils import position_to_idx, preprocess, set_seed
 
 
 def print_epoch_metrics(iter_number, elapsed_time, winrate, average_step_count):
@@ -42,6 +26,11 @@ def log_metrics(iter_number, writer, winrate, average_step_count):
     writer.add_scalar('Average step count', average_step_count, iter_number)
 
 
+def qwe(fields):
+    fields_arr = np.stack(fields)
+    return (fields_arr >= 0) & (fields_arr <= 8)
+
+
 def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
     if opt.verbose >= 2:
         print_result_table_headers()
@@ -51,16 +40,15 @@ def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
     early_stopping = EarlyStopping(model, opt)
 
     t = time.time()
-
     for it in range(opt.niter):
         optimizer.zero_grad()
-        fields = games_manager.get_fields()
-        one_hot_fields = torch.stack([preprocess(field) for field in fields]).to(device)
+        fields = np.stack(games_manager.get_fields())
+        one_hot_fields = torch.from_numpy(preprocess(fields)).to(device)
 
         pred = model(one_hot_fields)
         pred_proba = nn.functional.sigmoid(pred)
 
-        mask = torch.stack([(field >= 0) & (field <= 8) for field in fields]).to(device)
+        mask = torch.from_numpy((fields >= 0) & (fields <= 8)).to(device)
         tmp = pred_proba.detach().clone()
         tmp[mask] = torch.inf
 
@@ -68,7 +56,6 @@ def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
         positions = [(position // opt.column_count, position % opt.column_count) for position in positions]
 
         results = torch.tensor(games_manager.step(positions), dtype=torch.float32).to(device)
-
         target = pred_proba.detach().clone()
         target[mask] = 0.0
 
@@ -79,8 +66,6 @@ def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
 
         loss = loss_fn(pred_proba, target.to(device))
         loss.backward()
-        optimizer.step()
-
         optimizer.step()
 
         if opt.checkpoint_frequency and (it + 1) % opt.checkpoint_frequency == 0:

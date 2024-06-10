@@ -8,8 +8,8 @@ from model import MinesweeperModel
 from torch import nn
 
 from options.test_options import TestOptions
-
-IN_CHANNELS = 11
+from constants import IN_CHANNELS
+from utils import preprocess
 
 
 def set_seed(seed):
@@ -18,26 +18,17 @@ def set_seed(seed):
     torch.manual_seed(seed)
 
 
-def preprocess(field: torch.tensor):
-    one_hot_field = torch.zeros(IN_CHANNELS, field.size(0), field.size(1))
-    return one_hot_field.scatter_(0, field.unsqueeze(0).to(torch.int64), 1.0)
-
-
-def position_to_idx(i, j, k, row_count, column_count):
-    return i * row_count * column_count + j * column_count + k
-
-
 def test(opt, model, games_manager: GamesManager, device):
     start_time = time.time()
 
     while games_manager.total_played_games < opt.game_count:
-        fields = games_manager.get_fields()
-        one_hot_fields = torch.stack([preprocess(field) for field in fields]).to(device)
+        fields = np.stack(games_manager.get_fields())
+        one_hot_fields = torch.from_numpy(preprocess(fields)).to(device)
         with torch.no_grad():
             pred = model(one_hot_fields)
         pred_proba = nn.functional.sigmoid(pred)
 
-        mask = torch.stack([(field >= 0) & (field <= 8) for field in fields]).to(device)
+        mask = torch.from_numpy((fields >= 0) & (fields <= 8)).to(device)
         pred_proba[mask] = torch.inf
 
         positions = torch.argmin(pred_proba.reshape(pred_proba.shape[0], -1), dim=1).tolist()
