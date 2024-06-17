@@ -1,6 +1,8 @@
 from unittest import TestCase
 import numpy as np
-from utils import preprocess, position_to_idx, IN_CHANNELS
+import torch
+
+from utils import preprocess, position_to_idx, IN_CHANNELS, fild_positions
 
 
 class TestUtils(TestCase):
@@ -21,10 +23,10 @@ class TestUtils(TestCase):
 
         fields = np.stack([np.zeros((4, 4), dtype=np.int32), np.ones((4, 4), dtype=np.int32)])
         output = preprocess(fields)
-        self.assertTrue(np.sum(output[0, 0]) == 4 * 4)
-        self.assertTrue(np.sum(output[0, 1:]) == 0)
-        self.assertTrue(np.sum(output[1, 1]) == 4 * 4)
-        self.assertTrue(np.sum(output[1, [0, 2, 3, 4, 5, 6, 7, 8, 9]]) == 0)
+        self.assertTrue(np.all(output[0, 0] == np.ones((4, 4))))
+        self.assertTrue(np.all(output[0, 1:] == np.zeros((9, 4, 4))))
+        self.assertTrue(np.all(output[1, 1] == np.ones((4, 4))))
+        self.assertTrue(np.all(output[1, [0, 2, 3, 4, 5, 6, 7, 8, 9]] == np.zeros((9, 4, 4))))
 
     def test_position_to_idx(self):
         i = 1
@@ -53,3 +55,32 @@ class TestUtils(TestCase):
         expected_output = 299
         actual_output = position_to_idx(i, j, k, row_count, column_count)
         self.assertEqual(actual_output, expected_output)
+
+    def test_fild_positions(self):
+        probabilities = torch.tensor([[[0.1, 0.2, 0.3],
+                                       [0.4, 0.5, 0.6]]])
+        mask = torch.tensor([[[False, False, False],
+                              [False, False, False]]])
+        expected_positions = [(0, 0)]
+        self.assertEqual(fild_positions(probabilities, mask), expected_positions)
+
+        probabilities = torch.tensor([[[0.1, 0.2, 0.3],
+                                       [0.4, 0.5, 0.6]]])
+        mask = torch.tensor([[[True, True, True],
+                              [True, True, True]]])
+        expected_positions = [(0, 0)]
+        self.assertEqual(fild_positions(probabilities, mask), expected_positions)
+
+        probabilities = torch.tensor([[[0.1, 0.2, 0.3],
+                                       [0.4, 0.5, 0.6]]])
+        mask = torch.tensor([[[True, False, True],
+                              [False, True, False]]])
+        expected_positions = [(0, 1)]
+        self.assertEqual(fild_positions(probabilities, mask), expected_positions)
+
+        probabilities = torch.tensor([[[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]],
+                                      [[0.7, 0.8, 0.9], [0.1, 0.2, 0.3]]])
+        mask = torch.tensor([[[True, False, True], [False, True, False]],
+                             [[False, True, False], [True, False, True]]])
+        expected_positions = [(0, 1), (1, 1)]
+        self.assertEqual(fild_positions(probabilities, mask), expected_positions)
