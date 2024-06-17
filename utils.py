@@ -20,3 +20,12 @@ def preprocess(fields: np.ndarray):
 
 def position_to_idx(i, j, k, row_count, column_count):
     return i * row_count * column_count + j * column_count + k
+
+
+def fild_positions(probabilities, mask):
+    masked_probabilities = probabilities.clone()
+    masked_probabilities[mask] = torch.inf
+
+    positions = torch.argmin(masked_probabilities.reshape(masked_probabilities.shape[0], -1), dim=1).tolist()
+    column_count = masked_probabilities.shape[2]
+    return [(position // column_count, position % column_count) for position in positions]

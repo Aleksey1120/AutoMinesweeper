@@ -10,7 +10,7 @@ from model import MinesweeperModel
 from torch import nn
 from options.train_options import TrainOptions
 from constants import IN_CHANNELS
-from utils import position_to_idx, preprocess, set_seed
+from utils import position_to_idx, preprocess, set_seed, fild_positions
 
 
 def print_epoch_metrics(iter_number, elapsed_time, winrate, average_step_count):
@@ -43,12 +43,8 @@ def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
         pred = model(one_hot_fields)
         pred_proba = nn.functional.sigmoid(pred)
 
-        mask = torch.from_numpy((fields >= 0) & (fields <= 8)).to(device)
-        tmp = pred_proba.detach().clone()
-        tmp[mask] = torch.inf
-
-        positions = torch.argmin(tmp.reshape(tmp.shape[0], -1), dim=1).tolist()
-        positions = [(position // opt.column_count, position % opt.column_count) for position in positions]
+        mask = torch.from_numpy((fields >= 0) & (fields <= 8))
+        positions = fild_positions(pred_proba.detach(), mask)
 
         results = torch.tensor(games_manager.step(positions), dtype=torch.float32).to(device)
         target = pred_proba.detach().clone()
