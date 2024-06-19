@@ -25,6 +25,14 @@ def get_gray_to_red_gradient(value):
     return r, g, b
 
 
+def show_game_result(title, text):
+    msg = QtWidgets.QMessageBox()
+    msg.setWindowTitle(title)
+    msg.setText(text)
+    msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
+    msg.exec()
+
+
 class MinesweeperGUI(QWidget):
     def __init__(self, row_count, column_count, mine_count, model):
         super().__init__()
@@ -120,6 +128,10 @@ class MinesweeperGUI(QWidget):
             self.start_button.setText('Start')
             self.start_button.clicked.disconnect(self.pause_game)
             self.start_button.clicked.connect(self.start_game)
+            title = 'Lose' if res == 'lose' else 'Win'
+            text = 'That was close! (Or maybe not...)' if res == 'lose' \
+                else 'The AI cleared the board without detonating any mines'
+            show_game_result(title, text)
 
     def update_gui(self, field, probabilities):
         for row in range(self.row_count):
