@@ -1,6 +1,5 @@
 import sys
 
-import numpy as np
 import torch
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6 import QtCore
@@ -8,11 +7,10 @@ from PyQt6.QtWidgets import QWidget, QPushButton, QLineEdit, QApplication, QTabl
 from PyQt6 import QtWidgets, QtGui
 
 from minesweeper import Minesweeper
-from utils import fild_positions, preprocess
 from constants import IN_CHANNELS
 from model import MinesweeperModel
-import torch.nn as nn
 import minesweeper_app.config as cfg
+from minesweeper_app.predictor import Predictor
 
 
 def get_gray_to_red_gradient(value):
@@ -34,7 +32,7 @@ def show_game_result(title, text):
 
 
 class MinesweeperGUI(QWidget):
-    def __init__(self, row_count, column_count, mine_count, model):
+    def __init__(self, row_count, column_count, mine_count, predictor: Predictor):
         super().__init__()
 
         self.row_count = row_count
@@ -42,7 +40,7 @@ class MinesweeperGUI(QWidget):
         self.mine_count = mine_count
         self.cell_size = 60
         self.game = None
-        self.model = model
+        self.predictor = predictor
         self.is_running = False
 
         self.init_ui()
@@ -116,13 +114,13 @@ class MinesweeperGUI(QWidget):
 
     def update_game(self):
         field = self.game.get_field()
-        predict = self.predict(field)
-        self.update_gui(field, predict['proba'])
+        predict = self.predictor.predict(field)
+        self.update_gui(field, predict.probabilities)
 
-        res, _ = self.game.step(*predict['position'])
+        res, _ = self.game.step(*predict.suggested_move)
 
         if res in ['lose', 'win']:
-            self.update_gui(self.game._get_hidden_field(), predict['proba'])
+            self.update_gui(self.game._get_hidden_field(), predict.probabilities)
             self.timer.stop()
             self.game = None
             self.start_button.setText('Start')
@@ -156,24 +154,13 @@ class MinesweeperGUI(QWidget):
                     item.setBackground(brush)
                     self.tableWidget.setItem(row, col, item)
 
-    def predict(self, field):
-        field = np.expand_dims(field, axis=0)
-        one_hot_field = torch.from_numpy(preprocess(field))
-        with torch.no_grad():
-            pred_proba = nn.functional.sigmoid(self.model(one_hot_field))
-        mask = torch.from_numpy((field >= 0) & (field <= 8))
-        positions = fild_positions(pred_proba, mask)
-        return {
-            'proba': pred_proba.squeeze(),
-            'position': positions[0]
-        }
-
 
 if __name__ == '__main__':
     model = MinesweeperModel(IN_CHANNELS, cfg.MODEL_HIDDEN_CHANNELS, cfg.MODEL_BLOCK_COUNT)
     model.load_state_dict(torch.load(cfg.MODEL_PATH))
+    predictor = Predictor(model)
 
     app = QApplication(sys.argv)
-    ex = MinesweeperGUI(cfg.GAME_ROW_COUNT, cfg.GAME_COLUMN_COUNT, cfg.GAME_MINE_COUNT, model)
+    ex = MinesweeperGUI(cfg.GAME_ROW_COUNT, cfg.GAME_COLUMN_COUNT, cfg.GAME_MINE_COUNT, predictor)
     ex.show()
     sys.exit(app.exec())
