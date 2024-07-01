@@ -1,5 +1,5 @@
 from unittest import TestCase
-from minesweeper import Minesweeper
+from game import Minesweeper
 import numpy as np
 
 

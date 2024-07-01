@@ -6,9 +6,9 @@ from PyQt6 import QtCore
 from PyQt6.QtWidgets import QWidget, QPushButton, QLineEdit, QApplication, QTableWidget, QTableWidgetItem
 from PyQt6 import QtWidgets, QtGui
 
-from minesweeper import Minesweeper
+from game import Minesweeper
 from constants import IN_CHANNELS
-from model import MinesweeperModel
+from deep_learning.model import MinesweeperModel
 import minesweeper_app.config as cfg
 from minesweeper_app.predictor import Predictor
 

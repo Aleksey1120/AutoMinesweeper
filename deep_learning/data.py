@@ -1,7 +1,7 @@
 import numpy as np
 from collections import deque
 
-from minesweeper import Minesweeper
+from game import Minesweeper
 
 
 class GamesManager:

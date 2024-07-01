@@ -3,11 +3,11 @@ import time
 
 import numpy as np
 import torch
-from data import GamesManager
-from model import MinesweeperModel
+from deep_learning.data import GamesManager
+from deep_learning.model import MinesweeperModel
 from torch import nn
 
-from options.test_options import TestOptions
+from deep_learning.options.test_options import TestOptions
 from constants import IN_CHANNELS
 from utils import preprocess, set_seed, fild_positions
 

@@ -1,14 +1,14 @@
 import os.path
 import time
 from torch.utils.tensorboard import SummaryWriter
-from early_stopping import EarlyStopping
+from deep_learning.early_stopping import EarlyStopping
 
 import numpy as np
 import torch
-from data import GamesManager
-from model import MinesweeperModel
+from deep_learning.data import GamesManager
+from deep_learning.model import MinesweeperModel
 from torch import nn
-from options.train_options import TrainOptions
+from deep_learning.options.train_options import TrainOptions
 from constants import IN_CHANNELS
 from utils import position_to_idx, preprocess, set_seed, fild_positions
 
