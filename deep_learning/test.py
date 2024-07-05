@@ -1,4 +1,3 @@
-import random
 import time
 
 import numpy as np
@@ -9,7 +8,7 @@ from torch import nn
 
 from deep_learning.options.test_options import TestOptions
 from constants import IN_CHANNELS
-from utils import preprocess, set_seed, fild_positions
+from utils import preprocess, set_seed, find_positions
 
 
 def test(opt, model, games_manager: GamesManager, device):
@@ -23,7 +22,7 @@ def test(opt, model, games_manager: GamesManager, device):
         pred_proba = nn.functional.sigmoid(pred)
 
         mask = torch.from_numpy((fields >= 0) & (fields <= 8)).to(device)
-        positions = fild_positions(pred_proba, mask)
+        positions = find_positions(pred_proba, mask)
 
         games_manager.step(positions)
     print(f'Games played: {games_manager.total_played_games}.')

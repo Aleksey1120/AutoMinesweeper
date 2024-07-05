@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from utils import preprocess, fild_positions
+from utils import preprocess, find_positions
 import torch.nn as nn
 from dataclasses import dataclass
 
@@ -21,7 +21,7 @@ class Predictor:
         with torch.no_grad():
             pred_proba = nn.functional.sigmoid(self.model(one_hot_field))
         mask = torch.from_numpy((field >= 0) & (field <= 8))
-        positions = fild_positions(pred_proba, mask)
+        positions = find_positions(pred_proba, mask)
         return PredictionResult(
             probabilities=pred_proba.squeeze(),
             suggested_move=positions[0]

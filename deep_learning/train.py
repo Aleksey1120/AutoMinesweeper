@@ -10,7 +10,7 @@ from deep_learning.model import MinesweeperModel
 from torch import nn
 from deep_learning.options.train_options import TrainOptions
 from constants import IN_CHANNELS
-from utils import position_to_idx, preprocess, set_seed, fild_positions
+from utils import position_to_idx, preprocess, set_seed, find_positions
 
 
 def print_epoch_metrics(iter_number, elapsed_time, winrate, average_step_count):
@@ -44,7 +44,7 @@ def train(opt, model, games_manager, loss_fn, optimizer, scheduler, device):
         pred_proba = nn.functional.sigmoid(pred)
 
         mask = torch.from_numpy((fields >= 0) & (fields <= 8))
-        positions = fild_positions(pred_proba.detach(), mask)
+        positions = find_positions(pred_proba.detach(), mask)
 
         results = torch.tensor(games_manager.step(positions), dtype=torch.float32).to(device)
         target = pred_proba.detach().clone()

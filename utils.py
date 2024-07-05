@@ -22,7 +22,7 @@ def position_to_idx(i, j, k, row_count, column_count):
     return i * row_count * column_count + j * column_count + k
 
 
-def fild_positions(probabilities, mask):
+def find_positions(probabilities, mask):
     masked_probabilities = probabilities.clone()
     masked_probabilities[mask] = torch.inf
 
