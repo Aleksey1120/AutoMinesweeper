@@ -1,8 +1,10 @@
+from dataclasses import dataclass
+
 import numpy as np
 import torch
-from utils import preprocess, find_positions
 import torch.nn as nn
-from dataclasses import dataclass
+
+from utils import preprocess, find_positions
 
 
 @dataclass
