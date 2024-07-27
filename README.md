@@ -15,7 +15,7 @@ This directory contains the code for the Minesweeper application with an AI play
 # How to Run
 
 1. Train AI:
-    
+   
     Run command:
     ```
     python -m deep_learning.train <options>
@@ -25,10 +25,8 @@ This directory contains the code for the Minesweeper application with an AI play
     ```
     python -m deep_learning.train -h
     ```
-&nbsp;
-
 2. TestAI:
-
+   
     Run command:
     ```
     python -m deep_learning.test <options>
@@ -38,9 +36,8 @@ This directory contains the code for the Minesweeper application with an AI play
     ```
     python -m deep_learning.test -h
     ```
-&nbsp;
-3. Run Minesweeper app:
-    
+3. Minesweeper app:
+
     Run command:
     ```
     python -m minesweeper_app.minesweeper_gui
@@ -67,11 +64,11 @@ pip install -r requirements.txt
 ```
 
 # Screenshots
-
- <img src="images/img_1.png" style="display: block; margin: 0 auto">
- <div style="text-align: center"> Start screen </div>
-
+<div style="text-align: center"> Start screen </div>
+<img src="images/img_1.png" style="display: block; margin: 0 auto">
+ 
 <hr>
 
- <img src="images/img_2.png" style="display: block; margin: 0 auto">
  <div style="text-align: center"> Gameplay </div>
+ <img src="images/img_2.png" style="display: block; margin: 0 auto">
+
